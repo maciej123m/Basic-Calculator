@@ -8,14 +8,24 @@ namespace Kalkulator {
     /// </summary>
     public partial class MainWindow : Window {
 
+        public interface Icalc {
+            double sqroot(double liczba);
+            double exponentiation(double sc, int ile);
+            double addition(double value, double number);
+        }
+
         enum operacja : int {
             multiplication = (int)'*', 
             division = (int)'/', 
             addition = (int)'+',
             subtraction = (int)'-', 
             exponentiation = (int)'^',
+            equal = (int)'=',
             none = 0
         }
+
+        //interfejs
+        private Icalc calc;
 
         //delegate do pola tekstowego
         readonly private delegateTextChanged del;
@@ -37,6 +47,7 @@ namespace Kalkulator {
             del = textChanged;
             InitializeComponent();
             Kalkulator.SizeChanged += window_SizeChanged;
+            calc = new Calc();
         }
 
         private void textChanged(char t) {
@@ -67,7 +78,7 @@ namespace Kalkulator {
 
             del(char.Parse(content));
         }
-
+       
         private void actionButton(object sender, RoutedEventArgs e) {
             
             string act = (sender as Button).Content.ToString();
@@ -77,10 +88,9 @@ namespace Kalkulator {
                 restart();
                 return;
             }
-
-
+            
             //żeby wynik nie można było dodawać,mnożyć etc.
-            if (text.Length == 0) {
+            if (text.Length == 0 && lastAction != operacja.equal) {
                 return;
             }
 
@@ -146,30 +156,13 @@ namespace Kalkulator {
                     score /= value;
                     break;
                 case operacja.exponentiation:
-                    var pre = score;
-                    for (int i = 0; i < value-1; i++) {
-                        if (double.IsInfinity(score)) break;
-                        score *= pre;
-                    }
+                    score = calc.exponentiation(score, (int)value);
                     break;
             }
 
             //ustawiamy lastAction na pustą akcje
             lastAction = operacja.none;
             return true;
-        }
-
-        double sqroot(double liczba) {
-            if(double.IsInfinity(liczba)) {
-                return double.PositiveInfinity;
-            }
-            double x = liczba / 2;
-            while (Math.Abs(x - liczba / x) > 0.0000000000001) {
-                x = (x + liczba / x) / 2; 
-                if (x * x == liczba)
-                    break;
-            }
-            return x;
         }
 
         private void pierButton(object sender, RoutedEventArgs e) {
@@ -180,7 +173,7 @@ namespace Kalkulator {
                 return;
             }
 
-            var pierValue = sqroot(value);
+            var pierValue = calc.sqroot(value);
             text = pierValue.ToString();
             refreshTextLabel();
         }
@@ -206,6 +199,5 @@ namespace Kalkulator {
             }
             textWin.Content = text;
         }
-
     }
 }

@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         xmlns:fw="clr-namespace:SourceChord.FluentWPF;assembly=FluentWPF"
         fw:AcrylicWindow.Enabled="True"
-        Title="Kalkulator" Height="450" Width="325" MinWidth="325" Background="#55ffffff" MinHeight="450">
+        Title="Calculator" Height="450" Width="325" MinWidth="325" Background="#55ffffff" MinHeight="450">
 
 
     <Grid fw:PointerTracker.Enabled="True" >
