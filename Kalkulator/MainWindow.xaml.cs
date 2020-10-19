@@ -7,20 +7,18 @@ namespace Kalkulator {
     ///     Logika interakcji dla klasy MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-
         public interface Icalc {
             double sqroot(double liczba);
             double exponentiation(double sc, int ile);
-            double addition(double value, double number);
         }
 
-        enum operacja : int {
-            multiplication = (int)'*', 
-            division = (int)'/', 
-            addition = (int)'+',
-            subtraction = (int)'-', 
-            exponentiation = (int)'^',
-            equal = (int)'=',
+        private enum operacja : int {
+            multiplication = (int) '*',
+            division = (int) '/',
+            addition = (int) '+',
+            subtraction = (int) '-',
+            exponentiation = (int) '^',
+            equal = (int) '=',
             none = 0
         }
 
@@ -51,19 +49,17 @@ namespace Kalkulator {
         }
 
         private void textChanged(char t) {
-
             //jeżeli już jest przecinek
             if (t == ',' && text.Contains(t.ToString())) {
                 return;
             }
 
-            if (t == '0' && text.Length==0)
-            {
+            if (t == '0' && text.Length == 0) {
                 return;
             }
 
             //jeżeli przecinek jest jako pierwszy dodaj przed nim 0 (0,)
-            if (t == ',' && text.Length==0) {
+            if (t == ',' && text.Length == 0) {
                 text += "0";
             }
 
@@ -73,22 +69,36 @@ namespace Kalkulator {
 
         private delegate void delegateTextChanged(char t);
 
+        /// <summary>
+        /// kliknięcie cyfry
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void buttonClick(object sender, RoutedEventArgs e) {
             string content = (sender as Button).Content.ToString();
 
+            //jeżeli ostatnia operacja to równa się czyli po sumowaniu i nie wybraniu następnej operacji, zresetuj aplikacje
+            //ma na celu reset przy następnym wykonywaniu działania
+            if (lastAction == operacja.equal) {
+                restart(false);
+            }
+
             del(char.Parse(content));
         }
-       
-        private void actionButton(object sender, RoutedEventArgs e) {
-            
-            string act = (sender as Button).Content.ToString();
 
+        /// <summary>
+        /// kliknięcie przycisku akcji typu + - itp
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void actionButton(object sender, RoutedEventArgs e) {
+            string act = (sender as Button).Content.ToString();
             //jeżeli to C
             if (act[0] == 'C') {
                 restart();
                 return;
             }
-            
+
             //żeby wynik nie można było dodawać,mnożyć etc.
             if (text.Length == 0 && lastAction != operacja.equal) {
                 return;
@@ -101,17 +111,18 @@ namespace Kalkulator {
                 else {
                     score = 0;
                 }
+
                 firstNumber = false;
             }
             else {
                 var valid = sum();
-                if(!valid)
+                if (!valid)
                     return;
             }
-            
+
             //ustawia ostatnią akcje
             lastAction = (operacja) act[0];
-            
+
             //czyści zmienną zawierającą liczby kalkulatora
             text = "";
 
@@ -119,6 +130,10 @@ namespace Kalkulator {
             textWin.Content = score.ToString();
         }
 
+        /// <summary>
+        /// restart aplikacji
+        /// </summary>
+        /// <param name="res">czy okno ma zostać zresetowane</param>
         private void restart(bool res = true) {
             firstNumber = true;
 
@@ -128,10 +143,17 @@ namespace Kalkulator {
 
             lastAction = operacja.none;
 
-            if(res)
+            if (res)
                 refreshTextLabel();
         }
 
+        /// <summary>
+        /// odczytywanie ostatniej operacji
+        /// wykonywanie jej
+        /// czyszczenie operacji
+        /// wywowyłane za każdym kliknięciem przycisku akcji
+        /// </summary>
+        /// <returns>zwraca czy operacja przebiegła pomyślnie</returns>
         private bool sum() {
             double value = double.Parse(textWin.Content.ToString());
 
@@ -147,8 +169,8 @@ namespace Kalkulator {
                     break;
                 case operacja.division:
                     //sprawdzanie czy nie jest dzielone przez 0
-                    if(value==0) {
-                        textWin.Content= "Nie można dzielić przez 0!";
+                    if (value == 0) {
+                        textWin.Content = "Nie można dzielić przez 0!";
                         restart(false);
                         return false;
                     }
@@ -156,7 +178,7 @@ namespace Kalkulator {
                     score /= value;
                     break;
                 case operacja.exponentiation:
-                    score = calc.exponentiation(score, (int)value);
+                    score = calc.exponentiation(score, (int) value);
                     break;
             }
 
@@ -165,9 +187,14 @@ namespace Kalkulator {
             return true;
         }
 
+        /// <summary>
+        /// kliknięcie przycisku pierwiastka
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void pierButton(object sender, RoutedEventArgs e) {
             var value = double.Parse(textWin.Content.ToString());
-            if(value<0) {
+            if (value < 0) {
                 textWin.Content = "błąd!";
                 restart(false);
                 return;
@@ -178,25 +205,39 @@ namespace Kalkulator {
             refreshTextLabel();
         }
 
+        /// <summary>
+        /// ma na celu ustawianie wielkości tekstu przy zmianie wielkości okna
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void window_SizeChanged(object sender, SizeChangedEventArgs e) {
             var a = Kalkulator.ActualHeight;
             textWin.FontSize = a > 700 ? 50 : 30;
         }
 
-
+        /// <summary>
+        /// kliknięcie przycisku cofania
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button_cof_Click(object sender, RoutedEventArgs e) {
             if (text.Length == 0) {
                 return;
             }
+
             text = text.Remove(text.Length - 1);
             refreshTextLabel();
         }
 
+        /// <summary>
+        /// odświeżanie okna tekstu kalkulatora
+        /// </summary>
         private void refreshTextLabel() {
             if (text.Length == 0) {
                 textWin.Content = "0";
                 return;
             }
+
             textWin.Content = text;
         }
     }

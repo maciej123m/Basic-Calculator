@@ -35,8 +35,5 @@ namespace Kalkulator
             return sc;
         }
 
-        public double addition(double value, double number) {
-            return value + number;
-        }
     }
 }
